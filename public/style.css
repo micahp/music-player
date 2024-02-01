@@ -12,9 +12,18 @@ body, html {
 }
 
 #songList {
+    margin: auto;
     padding: 20px;
     overflow-y: auto;
     height: calc(100% - 100px);
+}
+
+.songItem {
+    padding: 10px;
+    margin: 10px;
+    max-width: 1200px;
+    border: 1px solid gray;
+    border-radius: 5px;
 }
 
 #nowPlayingBar {
