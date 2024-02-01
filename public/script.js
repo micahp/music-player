@@ -1,5 +1,3 @@
-const { cursorTo } = require("readline");
-
 document.addEventListener('DOMContentLoaded', () => {
     const songList = document.getElementById('songList');
     const playPauseButton = document.getElementById('playPauseButton');
@@ -64,26 +62,58 @@ document.addEventListener('DOMContentLoaded', () => {
     playPauseButton.addEventListener('click', togglePlayPause);
 
     // Function to play previous song
-    // function playPreviousSong() {
-    //     let currTime = Math.floor(audioElement.currentTime);
-    //     let duration = Math.floor(audioElement.duration);
-    //     console.log('currTime: ', currTime);
-    //     if (currTime < 3 || currentSongIndex == 0) {
-    //         playSong(currentSongIndex);
-    //     } else {
-    //         playSong(currentSongIndex - 1);
-    //     }
+    function playPreviousSong() {
+        let currTime = Math.floor(audioElement.currentTime);
+        let duration = Math.floor(audioElement.duration);
+        console.log('currTime: ', currTime);
+        if (currTime < 3 || currentSongIndex == 0) {
+            playSong(currentSongIndex - 1);
+        } else {
+            playSong(currentSongIndex);
+        }
       
-    //     // if (isNaN(duration)){
-    //     //   durationDiv.innerHTML = '00:00';
-    //     // } 
-    //     // else{
-    //     //   durationDiv.innerHTML = formatSecondsAsTime(duration);
-    //     // }
-    // }
+        // if (isNaN(duration)){
+        //   durationDiv.innerHTML = '00:00';
+        // } 
+        // else{
+        //   durationDiv.innerHTML = formatSecondsAsTime(duration);
+        // }
+    }
 
-    // prevButton.addEventListener('click', playPreviousSong);
+    prevButton.addEventListener('click', playPreviousSong);
 
+    // Toggle mute functionality
+    function toggleMute() {
+        audioElement.muted = !audioElement.muted; // Toggle the muted state
+        if (audioElement.muted) {
+            muteButton.innerHTML = '&#x1F507;'; // Muted icon/character
+        } else {
+            muteButton.innerHTML = '&#x1F50A;'; // Unmuted icon/character
+        }
+    }
+
+    // Event listener for the Mute button
+    muteButton.addEventListener('click', toggleMute);
+
+    // Event listener for the Volume Slider
+    volumeSlider.addEventListener('input', (event) => {
+        const volume = event.target.value / 100; // Convert the slider value to a 0-1 range
+        audioElement.volume = volume; // Set the audio volume
+
+        // Optionally, update the mute button icon based on the volume level
+        if (volume === 0) {
+            muteButton.innerHTML = '&#x1F507;'; // Muted icon/character
+            audioElement.muted = true; // Ensure consistency in mute state
+        } else if (audioElement.muted || volumeSlider.value > 0) {
+            audioElement.muted = false; // Unmute if adjusting volume above 0
+            muteButton.innerHTML = '&#x1F50A;'; // Unmuted icon/character
+        }
+    });
+
+    // handle audio slider
+    volumeSlider.addEventListener('change', (event) => {
+        volumeSlider.value = event.target.value;
+    })
 
     // Function to play the next song
     function playNextSong() {
@@ -107,10 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         playPauseButton.innerHTML = '&#x25B6;'; // Play icon
     });
     
-    // handle audio slider
-    volumeSlider.addEventListener('change', (event) => {
-        volumeSlider.value = event.target.value;
-    })
 
     // Handling file uploads
     const fileInput = document.createElement('input');

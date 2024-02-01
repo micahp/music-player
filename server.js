@@ -4,7 +4,7 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
-const audioFolderPath = 'C:\\Users\\micah\\Downloads'; // Update with your folder path
+const audioFolderPath = process.env.MUSIC_PATH; // Update with your folder path
 
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
 app.use('/audio', express.static(audioFolderPath));
