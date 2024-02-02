@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPlaying) {
             audioElement.pause(); // Pause the audio
             playPauseButton.innerHTML = '&#x25B6;'; // Update button to show the play icon
+        } else if (!audioElement.src) {
+            playSong(0);
         } else {
             audioElement.play(); // Play the audio
             playPauseButton.innerHTML = '&#x23F8;'; // Update button to show the pause icon
@@ -109,11 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             muteButton.innerHTML = '&#x1F50A;'; // Unmuted icon/character
         }
     });
-
-    // handle audio slider
-    volumeSlider.addEventListener('change', (event) => {
-        volumeSlider.value = event.target.value;
-    })
 
     // Function to play the next song
     function playNextSong() {
