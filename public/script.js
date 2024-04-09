@@ -17,9 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMuted = false;
 
     // Fetching audio files from the server
-    fetch('/audio-files')
+    fetch('http://localhost:3000/audio-files')
     .then(response => response.json())
     .then(files => {
+        console.log(files);
         songs = files.map(file => ({
             title: file,
             artist: 'Unknown Artist',
