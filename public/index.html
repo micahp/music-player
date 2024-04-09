@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="musicPlayer">
+        <!-- List of Songs -->
+        <div id="songList"></div>
+
+        <!-- Now Playing Bar -->
+        <div id="nowPlayingBar">
+            <div id="nowPlayingControls">
+                <!-- Previous Button -->
+                <button id="prevButton">&#x23EE;</button>
+
+                <!-- Play/Pause Button -->
+                <button id="playPauseButton">&#x25B6;</button>
+
+                <!-- Next Button -->
+                <button id="nextButton">&#x23ED;</button>
+
+                <!-- Volume Control -->
+                <div id="volumeControl">
+                    <button id="muteButton">&#x1F50A;</button>
+                    <input type="range" id="volumeSlider" min="0" max="100">
+                </div>
+            </div>
+
+            <!-- Song Metadata -->
+            <div id="songMetadata">
+                <img id="songCover" src="placeholder.jpg" alt="Song Cover">
+                <div id="songInfo">
+                    <div id="songTitle">Song Title</div>
+                    <div id="songArtist">Artist Name</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
