@@ -13,6 +13,7 @@ console.log('using file path: ', audioFolderPath);
 
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
 app.use('/audio', express.static(audioFolderPath));
+app.use('/images', express.static(imageFolderPath));
 app.use(cors());
 
 // Endpoint to list audio files
