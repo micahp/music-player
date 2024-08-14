@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Play/Pause button event listener
     playPauseButton.addEventListener('click', togglePlayPause);
 
+    audioElement.addEventListener('ended', () => {
+        playNextSong();
+    });
+
     // Function to play previous song
     function playPreviousSong() {
         let currTime = Math.floor(audioElement.currentTime);
