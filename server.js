@@ -7,6 +7,7 @@ const dotenv = require('dotenv').config();
 const app = express();
 const port = 3000;
 const audioFolderPath = process.env.MUSIC_PATH; // Update with your folder path
+const imageFolderPath = process.env.IMAGE_PATH; // Update with your folder path
 
 console.log('using file path: ', audioFolderPath);
 
@@ -26,6 +27,19 @@ app.get('/audio-files', (req, res) => {
 
         const audioFiles = files.filter(file => file.endsWith('.mp3')); // Filter for .mp3 files, modify as needed
         res.json(audioFiles);
+    });
+});
+
+// endpoint to list image files
+app.get('/image-files', (req, res) => {
+    console.log('get : ', req.url);
+    fs.readdir(imageFolderPath, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading the directory');
+            return;
+        }
+        console.log('image files found: ', files);
+        res.json(files);
     });
 });
 
