@@ -9,6 +9,15 @@
 <body class="bg-gray-100">
     <div id="imageContainer" class="flex flex-wrap justify-center p-8"></div>
 
+    <div id="audioControls" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4">
+        <div id="nowPlaying" class="text-center mb-2"></div>
+        <div class="flex justify-center items-center">
+            <button id="prevButton" class="px-4 py-2 bg-blue-500 rounded mr-2">&lt;&lt;</button>
+            <button id="playPauseButton" class="px-4 py-2 bg-green-500 rounded mr-2">Play</button>
+            <button id="nextButton" class="px-4 py-2 bg-blue-500 rounded">&gt;&gt;</button>
+        </div>
+    </div>
+
     <script>
         const API_BASE_URL = 'http://localhost:3000';
 
@@ -20,15 +29,11 @@
             });
         }
 
-        function sortStringsByCharacters(arr) {
+        function sortStringsByNumber(arr) {
             return arr.sort((a, b) => {
-                for (let i = 0; i < Math.min(a.length, b.length); i++) {
-                    if (a.charCodeAt(i) !== b.charCodeAt(i)) {
-                        return a.charCodeAt(i) - b.charCodeAt(i);
-                    }
-                }
-                // If all characters so far are equal, the shorter string should come first
-                return a.length - b.length;
+                const numberA = parseInt(a.split(' ')[2]);
+                const numberB = parseInt(b.split(' ')[2]);
+                return numberA - numberB;
             });
         }
 
@@ -52,7 +57,7 @@
             songList = await audioResponse.json();
             
             // Sort the songList
-            songList = sortStringsByCharacters(songList);
+            songList = sortStringsByNumber(songList);
             
             console.log('Sorted songList: ', songList);
 
@@ -92,17 +97,64 @@
                 }
             });
 
-            // Function to play song (to be implemented)
+            // Function to play song
             window.playSong = function(imageNumber) {
                 console.log('playSong: ', imageNumber);
                 const song = findSong(imageNumber);
                 if (song) {
-                    const songIndex = songList.indexOf(song);
-                    console.log('Playing song:', song, 'at index:', songIndex);
-                    // Call playSong function from script.js
-                    window.parent.playSong(songIndex);
+                    const audioElement = document.getElementById('audioPlayer') || createAudioElement();
+                    audioElement.src = `${API_BASE_URL}/audio/${encodeURIComponent(song)}`;
+                    audioElement.play()
+                        .then(() => {
+                            console.log('Playing:', song);
+                            nowPlaying.textContent = `Now Playing: ${song}`;
+                            playPauseButton.textContent = 'Pause';
+                            currentSongIndex = imageFiles.findIndex(file => file.split('.')[0] === imageNumber);
+                        })
+                        .catch(error => console.error('Error playing song:', error));
                 } else {
                     console.log("No song associated with this image");
+                }
+            }
+
+            // Helper function to create audio element if it doesn't exist
+            function createAudioElement() {
+                const audioElement = document.createElement('audio');
+                audioElement.id = 'audioPlayer';
+                document.body.appendChild(audioElement);
+                return audioElement;
+            }
+
+            const audioElement = createAudioElement();
+            const playPauseButton = document.getElementById('playPauseButton');
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const nowPlaying = document.getElementById('nowPlaying');
+            let currentSongIndex = -1;
+
+            playPauseButton.addEventListener('click', togglePlayPause);
+            prevButton.addEventListener('click', playPreviousSong);
+            nextButton.addEventListener('click', playNextSong);
+
+            function togglePlayPause() {
+                if (audioElement.paused) {
+                    audioElement.play();
+                    playPauseButton.textContent = 'Pause';
+                } else {
+                    audioElement.pause();
+                    playPauseButton.textContent = 'Play';
+                }
+            }
+
+            function playPreviousSong() {
+                if (currentSongIndex > 0) {
+                    playSong(imageFiles[currentSongIndex - 1].split('.')[0]);
+                }
+            }
+
+            function playNextSong() {
+                if (currentSongIndex < imageFiles.length - 1) {
+                    playSong(imageFiles[currentSongIndex + 1].split('.')[0]);
                 }
             }
         });
