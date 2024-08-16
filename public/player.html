@@ -10,22 +10,51 @@
     <div id="imageContainer" class="flex flex-wrap justify-center p-8"></div>
 
     <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        function sortImagesList(arr) {
+            return arr.sort((a, b) => {
+                let imageNumberA = a.split('.')[0];
+                let imageNumberB = b.split('.')[0];
+                return imageNumberA - imageNumberB;
+            });
+        }
+
+        function sortStringsByCharacters(arr) {
+            return arr.sort((a, b) => {
+                for (let i = 0; i < Math.min(a.length, b.length); i++) {
+                    if (a.charCodeAt(i) !== b.charCodeAt(i)) {
+                        return a.charCodeAt(i) - b.charCodeAt(i);
+                    }
+                }
+                // If all characters so far are equal, the shorter string should come first
+                return a.length - b.length;
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const imageContainer = document.getElementById('imageContainer');
             let songs = [];
             let songList = [];
-            // Fetch image files
-            const imageResponse = await fetch('http://localhost:3000/image-files');
-            const imageFiles = await imageResponse.json();
+            let imageFiles = [];
 
-            // Fetch song data
-            const songDataResponse = await fetch('gpplsdaily.json');
-            const parsedSongData = await songDataResponse.json();
+            // Fetch image files
+            const imageResponse = await fetch(`${API_BASE_URL}/image-files`);
+            imageFiles = await imageResponse.json();
+            
+            // Sort the imageFiles
+            imageFiles = sortImagesList(imageFiles);
+            
+            console.log('Sorted imageFiles: ', imageFiles);
 
             // Fetch audio files
-            const audioResponse = await fetch('http://localhost:3000/audio-files');
+            const audioResponse = await fetch(`${API_BASE_URL}/audio-files`);
             songList = await audioResponse.json();
-            console.log('songList: ', songList);
+            
+            // Sort the songList
+            songList = sortStringsByCharacters(songList);
+            
+            console.log('Sorted songList: ', songList);
 
             // Function to find corresponding song
             function findSong(imageNumber) {
@@ -33,7 +62,7 @@
                 const searchPattern = `gppls daily ${imageNumber}`;
                 const mp3Song = songList.find(s => {
                     const match = s.match(/gppls daily (\d+)/i);
-                    return match && match[1] === imageNumber && s.endsWith('.mp3');
+                    return match && parseInt(match[1]) === parseInt(imageNumber) && s.endsWith('.mp3');
                 });
                 if (mp3Song) return mp3Song;
                 const wavSong = songList.find(s => {
@@ -54,8 +83,8 @@
                     const imageDiv = document.createElement('div');
                     imageDiv.className = 'm-8 text-center';
                     imageDiv.innerHTML = `
-                        <img src="http://localhost:3000/images/${file}" alt="${songName}" 
-                             class="w-[500px] h-[500px] object-cover cursor-pointer hover:opacity-80 transition-opacity" 
+                        <img src="${API_BASE_URL}/images/${file}" alt="${songName}" 
+                             class="w-[250px] h-[250px] object-cover cursor-pointer hover:opacity-80 transition-opacity" 
                              onclick="playSong('${imageNumber}')">
                         <p class="mt-2 text-lg">${songName}</p>
                     `;
