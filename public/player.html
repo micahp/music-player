@@ -25,31 +25,38 @@
             // Fetch audio files
             const audioResponse = await fetch('http://localhost:3000/audio-files');
             songList = await audioResponse.json();
+            console.log('songList: ', songList);
 
             // Function to find corresponding song
             function findSong(imageNumber) {
-                const songData = parsedSongData.find(song => song.number === imageNumber);
-                if (songData) {
-                    const song = songList.find(s => s.toLowerCase().includes(songData.songName.toLowerCase()));
-                    return song || null;
-                }
-                return null;
+                console.log('findSong: ', imageNumber);
+                const searchPattern = `gppls daily ${imageNumber}`;
+                const mp3Song = songList.find(s => {
+                    const match = s.match(/gppls daily (\d+)/i);
+                    return match && match[1] === imageNumber && s.endsWith('.mp3');
+                });
+                if (mp3Song) return mp3Song;
+                const wavSong = songList.find(s => {
+                    const match = s.match(/gppls daily (\d+)/i);
+                    return match && match[1] === imageNumber && s.endsWith('.wav');
+                });
+                return wavSong || null;
             }
 
             // Display images and song names
             imageFiles.forEach(file => {
                 if (/^\d+$/.test(file.split('.')[0])) {
                     const imageNumber = file.split('.')[0];
+                    console.log('imageNumber: ', imageNumber);
                     const song = findSong(imageNumber);
-                    const songData = parsedSongData.find(s => s.number === imageNumber);
-                    const songName = songData ? songData.songName : 'Unknown Song';
+                    const songName = song ? song.replace(/\.(mp3|wav)$/, '') : 'Unknown Song';
 
                     const imageDiv = document.createElement('div');
                     imageDiv.className = 'm-8 text-center';
                     imageDiv.innerHTML = `
                         <img src="http://localhost:3000/images/${file}" alt="${songName}" 
                              class="w-[500px] h-[500px] object-cover cursor-pointer hover:opacity-80 transition-opacity" 
-                             onclick="playSong('${song}')">
+                             onclick="playSong('${imageNumber}')">
                         <p class="mt-2 text-lg">${songName}</p>
                     `;
                     imageContainer.appendChild(imageDiv);
@@ -57,16 +64,14 @@
             });
 
             // Function to play song (to be implemented)
-            window.playSong = function(songFile) {
-                console.log('playSong: ', songFile);
-                if (songFile) {
-                    const songIndex = songList.indexOf(songFile);
-                    if (songIndex !== -1) {
-                        // Call playSong function from script.js
-                        window.parent.playSong(songIndex);
-                    } else {
-                        console.log("Song not found in the list");
-                    }
+            window.playSong = function(imageNumber) {
+                console.log('playSong: ', imageNumber);
+                const song = findSong(imageNumber);
+                if (song) {
+                    const songIndex = songList.indexOf(song);
+                    console.log('Playing song:', song, 'at index:', songIndex);
+                    // Call playSong function from script.js
+                    window.parent.playSong(songIndex);
                 } else {
                     console.log("No song associated with this image");
                 }

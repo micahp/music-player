@@ -26,7 +26,7 @@ app.get('/audio-files', (req, res) => {
         }
         console.log('audio files found: ', files);
 
-        const audioFiles = files.filter(file => file.endsWith('.mp3')); // Filter for .mp3 files, modify as needed
+        const audioFiles = files.filter(file => /\.(mp3|wav)$/i.test(file)); // Filter for .mp3 or .wav files (case-insensitive)
         res.json(audioFiles);
     });
 });
