@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 </head>
 <body class="bg-gray-100">
     <div class="flex justify-center mt-4">
         <button id="playAllButton" class="px-4 py-2 bg-green-500 rounded mr-2">
-            <span>&#9658;</span> Play All
+            <svg xmlns="http://www.w3.org/2000/svg" fill="yes" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 inline mb-1 mr-1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+            </svg>Play All
         </button>
         <button id="shuffleAllButton" class="px-4 py-2 bg-blue-500 rounded">
-            <span>&#8680;</span> Shuffle All
+            <span style="font-size: 16px;" class="material-icons align-middle mb-1">&#xe043;</span> Shuffle All
         </button>
     </div>
     <div id="imageContainer" class="flex flex-wrap justify-center p-8"></div>
