@@ -167,55 +167,25 @@
                 }
             }
 
-            let shuffledIndexes = [];
-            let currentSongIndex = 0;
-
-            function playNextSong() {
-                if (shuffledIndexes.length === 0) {
-                    currentSongIndex++;
-                    if (currentSongIndex >= imageFiles.length) {
-                        currentSongIndex = 0; // Loop back to the first song
-                    }
-                } else {
-                    currentSongIndex = shuffledIndexes.shift();
-                }
-                playSong(imageFiles[currentSongIndex].split('.')[0]);
-            }
-
-            function playAllSongs() {
-                if (imageFiles.length > 0) {
-                    shuffledIndexes = []; // Clear shuffled indexes
-                    currentSongIndex = 0; // Start from the first song
-                    playNextSong();
-                }
-            }
-
-            function shuffleAllSongs() {
-                if (imageFiles.length > 0) {
-                    shuffledIndexes = [...Array(imageFiles.length).keys()]; // Create an array of indexes
-                    shuffledIndexes = shuffledIndexes.filter(index => index !== currentSongIndex); // Remove the current song index
-                    shuffleArray(shuffledIndexes); // Shuffle the indexes
-                    playNextSong();
-                }
-            }
-
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            }
-
-            // Event listener for song end to play the next song
-            audioElement.addEventListener('ended', () => {
-                playNextSong();
-            });
-
             const playAllButton = document.getElementById('playAllButton');
             const shuffleAllButton = document.getElementById('shuffleAllButton');
 
             playAllButton.addEventListener('click', playAllSongs);
             shuffleAllButton.addEventListener('click', shuffleAllSongs);
+
+            function playAllSongs() {
+                if (imageFiles.length > 0) {
+                    currentSongIndex = 0; // Start from the first song
+                    playSong(imageFiles[currentSongIndex].split('.')[0]); // Play the first song
+                }
+            }
+
+            function shuffleAllSongs() {
+                if (imageFiles.length > 0) {
+                    currentSongIndex = Math.floor(Math.random() * imageFiles.length); // Randomly select a song
+                    playSong(imageFiles[currentSongIndex].split('.')[0]); // Play the selected song
+                }
+            }
         });
     </script>
 </body>
