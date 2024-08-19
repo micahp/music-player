@@ -46,6 +46,19 @@
         }
         
 
+        function filterAndDeduplicateImages(imageFiles) {
+            const uniqueImages = {};
+            imageFiles.forEach(file => {
+                const [name, ext] = file.split('.');
+                if (/^\d+$/.test(name)) {
+                    if (!uniqueImages[name] || (ext === 'png' && uniqueImages[name].split('.')[1] === 'jpg')) {
+                        uniqueImages[name] = file;
+                    }
+                }
+            });
+            return Object.values(uniqueImages);
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const imageContainer = document.getElementById('imageContainer');
             let songs = [];
@@ -55,11 +68,14 @@
             // Fetch image files
             const imageResponse = await fetch(`${API_BASE_URL}/image-files`);
             imageFiles = await imageResponse.json();
-            
+
+            // Filter and deduplicate the imageFiles
+            imageFiles = filterAndDeduplicateImages(imageFiles);
+
             // Sort the imageFiles
             imageFiles = sortImagesList(imageFiles);
-            
-            console.log('Sorted imageFiles: ', imageFiles);
+
+            console.log('Filtered, deduplicated, and sorted imageFiles: ', imageFiles);
 
             // Fetch audio files
             const audioResponse = await fetch(`${API_BASE_URL}/audio-files`);
