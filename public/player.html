@@ -64,15 +64,6 @@
             return Object.values(uniqueImages);
         }
 
-        function shuffleAllSongs() {
-            isShuffleMode = !isShuffleMode;
-            if (imageFiles.length) {
-                shuffledPlaylist = [...imageFiles].sort(() => Math.random() - 0.5);
-                currentSongIndex = 0;
-                playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             const imageContainer = document.getElementById('imageContainer');
             let songs = [];
@@ -199,19 +190,26 @@
             }
 
             function playPreviousSong() {
-                if (isShuffleMode) {
-                    currentSongIndex = (currentSongIndex - 1 + shuffledPlaylist.length) % shuffledPlaylist.length;
-                    playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
+                const audioElement = document.getElementById('audioPlayer');
+                let currTime = Math.floor(audioElement.currentTime);
+                let playlist = isShuffleMode ? shuffledPlaylist : imageFiles;
+                let totalSongs = playlist.length;
+
+                if (currTime < 3 && currentSongIndex > 0) {
+                    currentSongIndex = (currentSongIndex - 1 + totalSongs) % totalSongs;
+                    playSong(playlist[currentSongIndex].split('.')[0]);
                 } else if (currentSongIndex > 0) {
-                    playSong(imageFiles[currentSongIndex - 1].split('.')[0]);
+                    audioElement.currentTime = 0;
+                    audioElement.play();
                 }
             }
 
             function playNextSong() {
-                if (isShuffleMode) {
+                console.log('isShuffleMode: ', isShuffleMode);
+                if (isShuffleMode && currentSongIndex < shuffledPlaylist.length - 1) {
                     currentSongIndex = (currentSongIndex + 1) % shuffledPlaylist.length;
                     playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
-                } else {
+                } else if (currentSongIndex < imageFiles.length - 1) {
                     currentSongIndex = (currentSongIndex + 1) % imageFiles.length;
                     playSong(imageFiles[currentSongIndex].split('.')[0]);
                 }
@@ -232,9 +230,19 @@
             }
 
             function shuffleAllSongs() {
-                if (imageFiles.length > 0) {
-                    currentSongIndex = Math.floor(Math.random() * imageFiles.length); // Randomly select a song
-                    playSong(imageFiles[currentSongIndex].split('.')[0]); // Play the selected song
+                console.log('shuffleAllSongs called. Current isShuffleMode:', isShuffleMode);
+                isShuffleMode = !isShuffleMode;
+                console.log('isShuffleMode toggled to:', isShuffleMode);
+                if (imageFiles.length) {
+                    if (isShuffleMode) {
+                        shuffledPlaylist = [...imageFiles].sort(() => Math.random() - 0.5);
+                        currentSongIndex = 0;
+                        playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
+                    } else {
+                        // If turning off shuffle, start from the current song in the original playlist
+                        currentSongIndex = imageFiles.findIndex(file => file === shuffledPlaylist[currentSongIndex]);
+                        playSong(imageFiles[currentSongIndex].split('.')[0]);
+                    }
                 }
             }
 
