@@ -23,8 +23,8 @@
 
         function sortImagesList(arr) {
             return arr.sort((a, b) => {
-                let imageNumberA = a.split('.')[0];
-                let imageNumberB = b.split('.')[0];
+                const imageNumberA = parseInt(a.split('.')[0], 10);
+                const imageNumberB = parseInt(b.split('.')[0], 10);
                 return imageNumberA - imageNumberB;
             });
         }
