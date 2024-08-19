@@ -32,6 +32,8 @@
 
     <script>
         const API_BASE_URL = 'http://localhost:3000';
+        let isShuffleMode = false;
+        let shuffledPlaylist = [];
 
         function sortImagesList(arr) {
             return arr.sort((a, b) => {
@@ -48,7 +50,6 @@
                 return numberA - numberB;
             });
         }
-        
 
         function filterAndDeduplicateImages(imageFiles) {
             const uniqueImages = {};
@@ -61,6 +62,15 @@
                 }
             });
             return Object.values(uniqueImages);
+        }
+
+        function shuffleAllSongs() {
+            isShuffleMode = !isShuffleMode;
+            if (imageFiles.length) {
+                shuffledPlaylist = [...imageFiles].sort(() => Math.random() - 0.5);
+                currentSongIndex = 0;
+                playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -127,7 +137,7 @@
             });
 
             // Function to play song
-            window.playSong = function(imageNumber) {
+            window.playSong = function (imageNumber) {
                 console.log('playSong: ', imageNumber);
                 const song = findSong(imageNumber);
                 if (song) {
@@ -138,7 +148,11 @@
                             console.log('Playing:', song);
                             nowPlaying.textContent = `Now Playing: ${song}`;
                             playPauseButton.textContent = 'Pause';
-                            currentSongIndex = imageFiles.findIndex(file => file.split('.')[0] === imageNumber);
+                            if (isShuffleMode) {
+                                currentSongIndex = shuffledPlaylist.findIndex(file => file.split('.')[0] === imageNumber);
+                            } else {
+                                currentSongIndex = imageFiles.findIndex(file => file.split('.')[0] === imageNumber);
+                            }
                         })
                         .catch(error => console.error('Error playing song:', error));
                 } else {
@@ -166,8 +180,17 @@
             nextButton.addEventListener('click', playNextSong);
 
             function togglePlayPause() {
+                const audioElement = document.getElementById('audioPlayer');
                 if (audioElement.paused) {
-                    audioElement.play();
+                    if (!audioElement.src) {
+                        if (isShuffleMode) {
+                            shuffleAllSongs();
+                        } else {
+                            playAllSongs();
+                        }
+                    } else {
+                        audioElement.play();
+                    }
                     playPauseButton.textContent = 'Pause';
                 } else {
                     audioElement.pause();
@@ -176,14 +199,21 @@
             }
 
             function playPreviousSong() {
-                if (currentSongIndex > 0) {
+                if (isShuffleMode) {
+                    currentSongIndex = (currentSongIndex - 1 + shuffledPlaylist.length) % shuffledPlaylist.length;
+                    playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
+                } else if (currentSongIndex > 0) {
                     playSong(imageFiles[currentSongIndex - 1].split('.')[0]);
                 }
             }
 
             function playNextSong() {
-                if (currentSongIndex < imageFiles.length - 1) {
-                    playSong(imageFiles[currentSongIndex + 1].split('.')[0]);
+                if (isShuffleMode) {
+                    currentSongIndex = (currentSongIndex + 1) % shuffledPlaylist.length;
+                    playSong(shuffledPlaylist[currentSongIndex].split('.')[0]);
+                } else {
+                    currentSongIndex = (currentSongIndex + 1) % imageFiles.length;
+                    playSong(imageFiles[currentSongIndex].split('.')[0]);
                 }
             }
 
@@ -195,8 +225,9 @@
 
             function playAllSongs() {
                 if (imageFiles.length > 0) {
-                    currentSongIndex = 0; // Start from the first song
-                    playSong(imageFiles[currentSongIndex].split('.')[0]); // Play the first song
+                    isShuffleMode = false;
+                    currentSongIndex = 0;
+                    playSong(imageFiles[currentSongIndex].split('.')[0]);
                 }
             }
 
@@ -206,6 +237,11 @@
                     playSong(imageFiles[currentSongIndex].split('.')[0]); // Play the selected song
                 }
             }
+
+            // Event listener for song end to play the next song
+            audioElement.addEventListener('ended', () => {
+                playNextSong();
+            });
         });
     </script>
 </body>
