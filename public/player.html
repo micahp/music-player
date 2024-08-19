@@ -6,7 +6,30 @@
     <title>Image Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+    <style>
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background-color: #d3d3d3;
+            position: relative;
+            cursor: pointer;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0;
+        }
+        .progress-handle {
+            width: 15px;
+            height: 15px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="flex justify-center mt-4">
@@ -19,14 +42,22 @@
             <span style="font-size: 16px;" class="material-icons align-middle mb-1">&#xe043;</span> Shuffle All
         </button>
     </div>
-    <div id="imageContainer" class="flex flex-wrap justify-center p-8 pb-24"></div>
+    <div id="imageContainer" class="flex flex-wrap justify-center p-8 pb-28"></div>
 
     <div id="audioControls" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4">
         <div id="nowPlaying" class="text-center mb-2"></div>
-        <div class="flex justify-center items-center">
+        <div class="flex justify-center items-center mb-2">
             <button id="prevButton" class="px-4 py-2 bg-blue-500 rounded mr-2">&lt;&lt;</button>
             <button id="playPauseButton" class="px-4 py-2 bg-green-500 rounded mr-2">Play</button>
             <button id="nextButton" class="px-4 py-2 bg-blue-500 rounded">&gt;&gt;</button>
+        </div>
+        <div id="progressContainer" class="flex items-center justify-center" style="display: none;">
+            <span id="currentTime" class="mr-2">0:00</span>
+            <div class="progress-container flex-grow mx-2 max-w-5xl">
+                <div class="progress-bar"></div>
+                <div class="progress-handle"></div>
+            </div>
+            <span id="duration" class="ml-2">0:00</span>
         </div>
     </div>
 
@@ -56,7 +87,7 @@
             imageFiles.forEach(file => {
                 const [name, ext] = file.split('.');
                 if (/^\d+$/.test(name)) {
-                    if (!uniqueImages[name] || (ext === 'png' && uniqueImages[name].split('.')[1] === 'jpg')) {
+                    if (!uniqueImages[name] || (ext === 'jpg' && uniqueImages[name].split('.')[1] === 'png')) {
                         uniqueImages[name] = file;
                     }
                 }
@@ -130,7 +161,8 @@
             // Function to play song
             window.playSong = function (imageNumber) {
                 console.log('playSong: ', imageNumber);
-                const song = findSong(imageNumber);
+                let song = findSong(imageNumber);
+                
                 if (song) {
                     const audioElement = document.getElementById('audioPlayer') || createAudioElement();
                     audioElement.src = `${API_BASE_URL}/audio/${encodeURIComponent(song)}`;
@@ -144,6 +176,7 @@
                             } else {
                                 currentSongIndex = imageFiles.findIndex(file => file.split('.')[0] === imageNumber);
                             }
+                            showProgressBar();
                         })
                         .catch(error => console.error('Error playing song:', error));
                 } else {
@@ -164,7 +197,12 @@
             const prevButton = document.getElementById('prevButton');
             const nextButton = document.getElementById('nextButton');
             const nowPlaying = document.getElementById('nowPlaying');
-            currentSongIndex = -1;
+            const progressContainer = document.querySelector('.progress-container');
+            const progressBar = document.querySelector('.progress-bar');
+            const progressHandle = document.querySelector('.progress-handle');
+            const currentTimeDisplay = document.getElementById('currentTime');
+            const durationDisplay = document.getElementById('duration');
+            let currentSongIndex = -1;
 
             playPauseButton.addEventListener('click', togglePlayPause);
             prevButton.addEventListener('click', playPreviousSong);
@@ -183,6 +221,7 @@
                         audioElement.play();
                     }
                     playPauseButton.textContent = 'Pause';
+                    showProgressBar();
                 } else {
                     audioElement.pause();
                     playPauseButton.textContent = 'Play';
@@ -250,6 +289,76 @@
             audioElement.addEventListener('ended', () => {
                 playNextSong();
             });
+
+            // Update progress bar and time displays
+            audioElement.addEventListener('timeupdate', () => {
+                const currentTime = audioElement.currentTime;
+                const duration = audioElement.duration;
+                if (!isNaN(duration)) {
+                    const progress = (currentTime / duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressHandle.style.left = `${progress}%`;
+                    currentTimeDisplay.textContent = formatTime(currentTime);
+                    durationDisplay.textContent = formatTime(duration);
+                }
+            });
+
+            // Seek functionality
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const clickedValue = (x / progressContainer.offsetWidth);
+                audioElement.currentTime = clickedValue * audioElement.duration;
+            });
+
+            // Drag functionality for progress handle
+            let isDragging = false;
+
+            progressHandle.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function onMouseMove(e) {
+                if (isDragging) {
+                    const rect = progressContainer.getBoundingClientRect();
+                    let x = e.clientX - rect.left;
+                    x = Math.max(0, Math.min(x, progressContainer.offsetWidth));
+                    const progress = x / progressContainer.offsetWidth;
+                    audioElement.currentTime = progress * audioElement.duration;
+                }
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            // Format time in MM:SS
+            function formatTime(time) {
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            function showProgressBar() {
+                document.getElementById('progressContainer').style.display = 'flex';
+                progressContainer.style.display = 'flex';
+            }
+
+            function hideProgressBar() {
+                progressContainer.style.display = 'none';
+            }
+
+            audioElement.addEventListener('play', showProgressBar);
+            audioElement.addEventListener('pause', () => {
+                if (audioElement.currentTime === 0) {
+                    hideProgressBar();
+                }
+            });
+            audioElement.addEventListener('ended', hideProgressBar);
         });
     </script>
 </body>
